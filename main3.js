@@ -1,4 +1,23 @@
-let tableau = document.getElementsByClassName("tableau");
+let Tableau = class {
+	constructor(ligne,colonne){
+		this.ligne = ligne;
+		this.colonne = colonne;
+	}
+	nbLigne(){
+		return this.ligne;
+	}
+	nbColonne(){
+		return this.colonne;
+	}
+	nbCellule(){
+		return this.ligne * this.colonne;
+	}
+}
+
+let tableauInit; 
+let tableau = document.getElementById('tableau');
+initTableau();
+
 document.getElementById("btnRejouer").addEventListener("click", rejouer);
 let textVictoire = document.getElementById("textVictoire");
 let jouerJoueur1 = true;
@@ -9,13 +28,11 @@ let symbolejoueur1 = "O";
 let symboleJoueur2 = "X";
 let j1 = document.getElementsByClassName(classeJoueur1);
 let j2 = document.getElementsByClassName(classeJoueur2);
-let nbCellule;
+let celluleRestante;
 let nomJoueur1;
 let nomJoueur2;
 let scoreJoueur1;
 let scoreJoueur2;
-let nbLigne;
-let nbColonne;
 let nbPartie = 0;
 
 initJoueur1();
@@ -27,14 +44,22 @@ setScoreJoueur2();
 textVictoire.innerText = "Tours de " + nomJoueur1;
 
 
-
+function addRowsAndCells(){
+	for(let i=0;i<tableauInit.nbLigne();i++){
+		let ligneTab = tableau.insertRow(-1);
+		for(let j=0;j<tableauInit.nbColonne();j++){
+			let colonneTab = ligneTab.insertCell(j);
+			colonneTab.className ="";
+		}
+			
+	}
+	
+}
 function rejouer() {
-    resetChamp(); // appel de la methode plusieurs fois pour tout supprimer sinon il en reste pk ?
-    resetChamp();
-	resetChamp();
-    //resetCellule();
-    nbCellule = celluleTotal();
-    tableau[0].addEventListener("click", ajoutElement);
+    resetChamp(); 
+    addRowsAndCells();
+  
+    tableau.addEventListener("click", ajoutElement);
 	if(jouerJoueur1 == true){
 		 textVictoire.innerText = "Tour de " + nomJoueur1;
 	} else {
@@ -42,30 +67,32 @@ function rejouer() {
 	}
    
     nbPartie++;
+	celluleRestante = tableauInit.nbCellule();
     //jouerJoueur1 = true;
     //jouerJoueur2 = false;
    
 }
 
 function resetChamp() {
-    
-    for (let i = 0; i < j1.length; i++) {
-        j1[i].textContent = "";
-        j1[i].setAttribute('class',"") ;
-    }
-	for (let i = 0; i < j2.length; i++) {
-        j2[i].textContent = "";
-        j2[i].setAttribute('class',"") ;
-    }
+    for(let i=0;i<tableauInit.nbLigne();i++){
+	    tableau.deleteRow(-1);					
+	}  
 }
 
-
-
 function start() {
-    nbCellule = celluleTotal();
-    tableau[0].addEventListener("click", ajoutElement);
-    //textVictoire.innerText = "Tour de " + nomJoueur1;
-
+		
+	if(tableauInit.nbLigne() > 1 && tableauInit.nbLigne()!=="" 
+		&& tableauInit.nbColonne() > 1 && tableauInit.nbColonne()!==""){
+		celluleRestante = tableauInit.nbCellule();
+		tableau.addEventListener("click", ajoutElement);
+		addRowsAndCells();
+		return true;
+	}else {
+		
+		window.alert('Veuillez choisir une nombre de ligne et colonne supérieur à 1 Merci .');
+		initTableau();
+		return false;
+	}
 
 }
 
@@ -86,14 +113,12 @@ function setScoreJoueur1() {
 function setScoreJoueur2() {
     document.getElementById("pointJoueur2").textContent = scoreJoueur2;
 }
-
-function celluleTotal() {
-
-
-    nbLigne = tableau[0].rows.length;
-    nbColonne = tableau[0].rows[0].cells.length;
-    return nbLigne * nbColonne;
-
+function initTableau(){
+	let ligne;
+	let colonne;
+	ligne = window.prompt("Nombre de ligne");
+	colonne = window.prompt("Nombre de colonne");
+	tableauInit = new Tableau(ligne,colonne);
 }
 
 
@@ -107,12 +132,12 @@ function isEmpty(e) {
 
 function victoireLigne(classe){
 
-	for(let i =0;i<nbLigne;i++){
+	for(let i =0;i<tableauInit.nbLigne();i++){
 		let trouve =0;
-    	for(let j = 0 ;j<nbColonne;j++){
-        	if (tableau[0].rows[i].cells[j].className === classe){
+    	for(let j = 0 ;j<tableauInit.nbColonne();j++){
+        	if (tableau.rows[i].cells[j].className === classe){
             	trouve++;
-            	if(trouve == nbLigne){
+            	if(trouve == tableauInit.nbColonne()){
         			return true;
         		}
         		
@@ -126,12 +151,12 @@ function victoireLigne(classe){
 
 function victoireColonne(classe){
 
-	for(let i =0;i<nbLigne;i++){
+	for(let i =0;i<tableauInit.nbColonne();i++){
 		let trouve =0;
-    	for(let j = 0 ;j<nbColonne;j++){
-        	if (tableau[0].rows[j].cells[i].className === classe){
+    	for(let j = 0 ;j<tableauInit.nbLigne();j++){
+        	if (tableau.rows[j].cells[i].className === classe){
             	trouve++;
-            	if(trouve == nbColonne){
+            	if(trouve == tableauInit.nbLigne()){
         			return true;
         		}
         		
@@ -145,31 +170,37 @@ function victoireColonne(classe){
 
 function victoireDiago1(classe){
 
-	let trouve =0;
-	for(let i =0;i<nbLigne;i++){
-    	if(tableau[0].rows[i].cells[i].className == classe){
-    		trouve++;
-    		if(trouve == nbLigne){
-    			return true;
-    		}
+	if(tableauInit.nbLigne() === tableauInit.nbColonne()){
+		let trouve =0;
+		for(let i =0;i<tableauInit.nbLigne();i++){
+			if(tableau.rows[i].cells[i].className == classe){
+				trouve++;
+				if(trouve == tableauInit.nbLigne()){
+					return true;
+				}
+			}
     	}
 	}
+	
 	return false;
 }
 
 function victoireDiago2(classe){
 
-	let j = nbColonne - 1;
-	let trouve = 0;
-	for(let i = 0 ;i< nbColonne;i++){
-		if(tableau[0].rows[i].cells[j].className == classe){
-    		trouve++;
-    		if(trouve == nbLigne){
-    			return true;
-    		}
+	if(tableauInit.nbLigne() === tableauInit.nbColonne()){
+		let j = tableauInit.nbColonne() - 1;
+		let trouve = 0;
+		for(let i = 0 ;i< tableauInit.nbLigne();i++){
+			if(tableau.rows[i].cells[j].className == classe){
+				trouve++;
+				if(trouve == tableauInit.nbColonne()){
+					return true;
+				}
+			}
+			j--;
     	}
-    	j--;
-	}
+    	
+	}		
 	
 	return false;
 }
@@ -193,9 +224,9 @@ function rechercheGagnant(classe) {
     return false;
 }
 function matchNul() {
-    for(let i=0;i<nbLigne;i++){
-        for(let j=0;j<nbColonne;j++){
-            if(tableau[0].rows[i].cells[j].className === ""){
+    for(let i=0;i<tableauInit.nbLigne();i++){
+        for(let j=0;j<tableauInit.nbColonne();j++){
+            if(tableau.rows[i].cells[j].className === ""){
                 return true;
             }
         }
@@ -208,29 +239,27 @@ function ajoutElement(event) {
 
     let cellule = event.target;
 
-	if(!matchNul()){
-            textVictoire.innerText = "Match nul"
-        }
     if (jouerJoueur1 === true) {
-        if(!matchNul()){
-            textVictoire.innerText = "Match nul"
-        }
+        
         if (isEmpty(cellule)) {
             cellule.className = classeJoueur1;
             cellule.textContent = symbolejoueur1;
+			celluleRestante--;
             if (rechercheGagnant(classeJoueur1)) {
                 
                 textVictoire.innerText = "Victoire de " + nomJoueur1;
                 scoreJoueur1++;             
                 setScoreJoueur1();
                 setScoreJoueur2();
-                tableau[0].removeEventListener("click", ajoutElement);
+                tableau.removeEventListener("click", ajoutElement);
 				jouerJoueur1 = false;
 				jouerJoueur2 = true;
-            } else {
-			jouerJoueur1 = false;
-            jouerJoueur2 = true;
-			textVictoire.innerText = "Tour de " + nomJoueur2;
+			}else if(celluleRestante===0){
+				textVictoire.innerText = "Match null ";
+			} else {
+				jouerJoueur1 = false;
+				jouerJoueur2 = true;
+				textVictoire.innerText = "Tour de " + nomJoueur2;
 
 			}
             
@@ -238,12 +267,11 @@ function ajoutElement(event) {
 
     }
     if (jouerJoueur2 === true) {
-        if(!matchNul()){
-            textVictoire.innerText = "Match nul"
-        }
+       
         if (isEmpty(cellule)) {
             cellule.className = classeJoueur2;
             cellule.textContent = symboleJoueur2;
+			celluleRestante--;
             if (rechercheGagnant(classeJoueur2)) {
                
                 textVictoire.innerText = "Victoire de " + nomJoueur2;
@@ -251,10 +279,12 @@ function ajoutElement(event) {
                 setScoreJoueur2();
                 setScoreJoueur1();
 
-                tableau[0].removeEventListener("click", ajoutElement);
+                tableau.removeEventListener("click", ajoutElement);
 				jouerJoueur2 = false;
 				jouerJoueur1 = true;
-            } else {
+            }else if(celluleRestante===0){
+				textVictoire.innerText = "Match null ";
+			}else {
 				jouerJoueur2 = false;
 				jouerJoueur1 = true;
 				textVictoire.innerText = "Tour de " + nomJoueur1;
@@ -268,7 +298,9 @@ function ajoutElement(event) {
 
 }
 
+do {
+	start();
+}while (start() === false)
 
-start();
 
 
